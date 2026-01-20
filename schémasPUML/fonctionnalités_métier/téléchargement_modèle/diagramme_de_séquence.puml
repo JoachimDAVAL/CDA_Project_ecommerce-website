@@ -1,0 +1,51 @@
+@startuml
+title Téléchargement Sécurisé - Diagramme de Séquence
+
+actor "Acheteur" as User
+participant "FrontEnd (Site Web)" as Front
+participant "BackEnd (API)" as Back
+database "Base de Données" as DB
+participant "Plateforme Cloud\n(Stockage)" as Cloud
+
+' --- ÉTAPE 1 : DEMANDE ---
+User -> Front : 1. Clique sur "Télécharger"
+activate Front
+
+Front -> Back : 2. GET /api/purchases/{id}/download
+activate Back
+
+' --- ÉTAPE 2 : VÉRIFICATION DES DROITS ---
+Back -> DB : 3. Vérifier existence commande (UserID + ModelID)
+activate DB
+DB --> Back : Résultat (Preuve d'achat OK)
+deactivate DB
+
+alt Achat Non Trouvé
+    Back --> Front : Erreur 403 Forbidden
+    Front -> User : "Vous devez acheter ce modèle"
+else Achat Valide
+    ' --- ÉTAPE 3 : GÉNÉRATION DU LIEN ---
+    Back -> Cloud : 4. Demander URL signée (Fichier, Expiration=15min)
+    activate Cloud
+    
+    note right
+        Le lien est temporaire.
+        Si l'utilisateur le partage,
+        il ne marchera plus après 15min.
+    end note
+    
+    Cloud --> Back : 5. Retourne URL (https://cloud.com/token...)
+    deactivate Cloud
+    
+    ' --- ÉTAPE 4 : TÉLÉCHARGEMENT ---
+    Back --> Front : 6. Redirection vers URL Cloud (302)
+    deactivate Back
+    
+    Front -> Cloud : 7. Requête directe de téléchargement (via URL)
+    activate Cloud
+    Cloud -> User : 8. Envoi du flux de données (Fichier .zip/.stl)
+    deactivate Cloud
+    deactivate Front
+end
+
+@enduml

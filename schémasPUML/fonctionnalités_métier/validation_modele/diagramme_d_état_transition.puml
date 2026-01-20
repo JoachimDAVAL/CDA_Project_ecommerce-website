@@ -1,0 +1,37 @@
+@startuml
+title Cycle de vie Modération - Diagramme d'État
+
+' État d'entrée pour ce processus
+[*] --> EnAttenteValidation : Soumission par l'Artiste
+
+state EnAttenteValidation {
+    ' L'admin voit le modèle dans sa liste
+}
+
+' Les transitions basées sur la décision de l'admin
+EnAttenteValidation --> EnLigne : Accepté par Admin
+EnAttenteValidation --> Rejeté : Refusé par Admin\n(Motif obligatoire)
+
+state EnLigne {
+    ' Visible par les acheteurs
+    ' Peut être acheté
+}
+
+state Rejeté {
+    ' Invisible publiquement
+    ' L'artiste peut modifier la fiche/fichier
+}
+
+' La boucle de correction
+Rejeté --> EnAttenteValidation : Correction et Re-soumission\npar l'Artiste
+
+' Cas de sortie
+EnLigne --> [*] : Archivage / Suppression
+Rejeté --> [*] : Abandon par l'Artiste
+
+note right of EnLigne
+    C'est le seul état qui permet
+    l'apparition dans le catalogue.
+end note
+
+@enduml

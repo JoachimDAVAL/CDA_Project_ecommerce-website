@@ -1,0 +1,44 @@
+@startuml
+title Validation d'un Modèle - Diagramme d'Activité
+
+' Swimlanes
+|Administrateur|
+start
+:Accéder au Dashboard Admin;
+:Consulter la liste "En attente de validation";
+:Ouvrir la fiche d'un modèle;
+
+|#AntiqueWhite|Système (Back-Office)|
+:Charger les métadonnées (Prix, Description);
+:Charger le Viewer 3D (Aperçu fichier);
+
+|Administrateur|
+:Vérifier la conformité (Copyright, Qualité);
+
+if (Le modèle est-il valide ?) then (NON)
+    :Cliquer sur "Refuser";
+    :Saisir le motif du refus
+    (Ex: Fichier corrompu, Contenu haineux...);
+    
+    |#AntiqueWhite|Système (Back-Office)|
+    :Passer le statut à "REJETÉ";
+    :Envoyer email de notification à l'Artiste;
+    
+    |Artiste|
+    :Reçoit motif et doit corriger;
+    stop
+else (OUI)
+    |Administrateur|
+    :Cliquer sur "Valider / Publier";
+    
+    |#AntiqueWhite|Système (Back-Office)|
+    :Passer le statut à "EN LIGNE";
+    :Indexer dans le moteur de recherche;
+    :Envoyer email de succès à l'Artiste;
+    
+    |Artiste|
+    :Le modèle est en vente;
+    stop
+endif
+
+@enduml

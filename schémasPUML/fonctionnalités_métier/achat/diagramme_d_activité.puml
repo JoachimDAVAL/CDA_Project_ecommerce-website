@@ -1,0 +1,50 @@
+@startuml 
+Title Processus d'Achat - Diagramme d'Activité
+
+' Définition des zones (Swimlanes)
+|Acheteur|
+start
+:Valider le panier;
+
+' Vérification de la connexion
+if (Est connecté ?) then (non)
+    :S'authentifier / S'inscrire;
+else (oui)
+endif
+
+' --- NOUVELLE ÉTAPE : FACTURATION & TAXES ---
+:Saisir l'adresse de facturation;
+
+|#AntiqueWhite|Système (Back-End)|
+:Identifier le pays de résidence;
+:Calculer les taxes applicables (TVA);
+:Mettre à jour le montant total TTC;
+
+|Acheteur|
+:Valider le montant final;
+' -------------------------------------------
+
+:Choisir le moyen de paiement;
+:Saisir les données bancaires;
+
+|#LightCyan|Système de Paiement (Stripe)|
+:Traiter la transaction;
+
+|#AntiqueWhite|Système (Back-End)|
+if (Paiement validé ?) then (oui)
+    :Générer la commande;
+    :Enregistrer la transaction;
+    :Vider le panier;
+    :Envoyer email de confirmation;
+    
+    |Acheteur|
+    :Afficher page de succès;
+    stop
+else (non)
+    |Acheteur|
+    :Afficher message d'erreur;
+    :Proposer de réessayer;
+    stop
+endif
+
+@enduml

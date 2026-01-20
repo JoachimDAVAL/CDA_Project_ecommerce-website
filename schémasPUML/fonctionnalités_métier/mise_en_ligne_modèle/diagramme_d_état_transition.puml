@@ -1,0 +1,33 @@
+@startuml
+title Cycle de vie d'un Modèle 3D - Diagramme d'État
+
+' État initial
+[*] --> Brouillon : Création fiche (non terminée)
+
+state Brouillon : Visible seulement par l'artiste\nFichiers pas encore uploadés
+
+Brouillon --> EnAttenteValidation : Upload complet et soumission
+
+state EnAttenteValidation {
+    ' L'admin voit le modèle dans son dashboard
+}
+
+EnAttenteValidation --> EnLigne : Validation par l'Administrateur
+EnAttenteValidation --> Rejeté : Refus par l'Administrateur\n(Contenu non conforme)
+
+state EnLigne {
+    ' Visible dans le catalogue pour les Acheteurs
+}
+
+state Rejeté {
+    ' Visible par l'artiste avec motif du refus
+    ' L'artiste doit corriger
+}
+
+Rejeté --> EnAttenteValidation : Modification et re-soumission
+EnLigne --> Supprimé : Suppression par l'Artiste ou Admin
+EnLigne --> HorsLigne : Désactivé temporairement par l'Artiste
+
+Supprimé --> [*]
+
+@enduml

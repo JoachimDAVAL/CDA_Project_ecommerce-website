@@ -1,0 +1,29 @@
+@startuml 
+Title Cycle de vie d'une Commande - Diagramme d'État
+
+' État initial
+[*] --> Panier : Ajout d'un article
+
+state Panier {
+    ' Sous-états du panier si besoin, ici simplifié
+}
+
+Panier --> EnAttentePaiement : Clic sur "Payer"
+
+state EnAttentePaiement : Le client est sur Stripe\nLe système attend le retour
+
+EnAttentePaiement --> Payée : Transaction validée
+EnAttentePaiement --> Annulée : Transaction refusée\nou Annulation utilisateur
+
+state Payée {
+    ' Une fois payée, les fichiers sont accessibles
+}
+
+state Annulée : Commande archivée\nPanier restauré (optionnel)
+
+Payée --> Remboursée : Litige / Demande client
+Remboursée --> [*]
+Payée --> [*]
+Annulée --> [*]
+
+@enduml

@@ -1,0 +1,66 @@
+@startuml
+title Processus de Validation - Diagramme de Séquence
+
+actor "Administrateur" as Admin
+participant "Dashboard Admin\n(Vue)" as Front
+participant "BackEnd (API)" as Back
+database "Base de Données" as DB
+participant "Service Email" as Mail
+
+' --- CHARGEMENT ---
+Admin -> Front : 1. Sélectionne un modèle en attente
+activate Front
+Front -> Back : 2. GET /api/admin/models/{id}
+activate Back
+Back -> DB : 3. Récupérer infos + URLs Cloud
+activate DB
+DB --> Back : Données modèle
+deactivate DB
+Back --> Front : JSON (Infos + Lien Viewer 3D)
+deactivate Back
+
+Admin -> Front : 4. Analyse le modèle (visuel)
+
+' --- DÉCISION ---
+alt Décision : VALIDER
+    Admin -> Front : 5. Clique "Valider"
+    Front -> Back : 6. PATCH /api/admin/models/{id}/status \n{status: 'ONLINE'}
+    activate Back
+    
+    Back -> DB : 7. UPDATE status = 'ONLINE'
+    activate DB
+    DB --> Back : OK
+    deactivate DB
+    
+    Back -> Mail : 8. Envoyer Email ("Votre modèle est en ligne")
+    activate Mail
+    Mail --> Back : Envoyé
+    deactivate Mail
+    
+    Back --> Front : 9. Confirmation
+    deactivate Back
+    Front -> Admin : Affiche "Modèle publié avec succès"
+
+else Décision : REFUSER
+    Admin -> Front : 5. Clique "Refuser" + Saisit Motif
+    Front -> Back : 6. PATCH /api/admin/models/{id}/status \n{status: 'REJECTED', reason: '...'}
+    activate Back
+    
+    Back -> DB : 7. UPDATE status = 'REJECTED'
+    activate DB
+    DB --> Back : OK
+    deactivate DB
+    
+    Back -> Mail : 8. Envoyer Email ("Refusé : [Motif]")
+    activate Mail
+    Mail --> Back : Envoyé
+    deactivate Mail
+    
+    Back --> Front : 9. Confirmation
+    deactivate Back
+    Front -> Admin : Affiche "Modèle rejeté"
+end
+
+deactivate Front
+
+@enduml

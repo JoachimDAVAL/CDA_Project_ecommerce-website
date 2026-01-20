@@ -1,0 +1,96 @@
+@startuml
+
+' Configuration pour un rendu style "SQL"
+hide circle
+skinparam linetype ortho
+
+' --- TABLES ---
+
+entity "UTILISATEUR" as USER {
+  *id_user : INT(11) <<PK, AI>>
+  --
+  *email : VARCHAR(255) <<UNIQUE>>
+  *mot_de_passe : VARCHAR(255)
+  *pseudo : VARCHAR(50)
+  *date_inscription : DATETIME
+  *roles : JSON
+  nom : VARCHAR(100)
+  prenom : VARCHAR(100)
+  adresse_defaut : TEXT
+  pays_residence : VARCHAR(2)
+}
+
+entity "ARTISTE" as ARTIST {
+  *id_user : INT(11) <<PK, FK>>
+  --
+  description_boutique : TEXT
+  siret : VARCHAR(14)
+  lien_portfolio : VARCHAR(255)
+}
+
+entity "MODELE_3D" as MODEL {
+  *id_modele : INT(11) <<PK, AI>>
+  --
+  *titre : VARCHAR(100)
+  *description : TEXT
+  *prix : DECIMAL(10,2)
+  *date_creation : DATETIME
+  *statut : VARCHAR(20)
+  nombre_vues : INT(11) DEFAULT 0
+  *id_artiste : INT(11) <<FK>>
+}
+
+entity "FICHIER" as FILE {
+  *id_fichier : INT(11) <<PK, AI>>
+  --
+  *url_cloud : VARCHAR(255)
+  *type : VARCHAR(20)
+  *format : VARCHAR(10)
+  taille_ko : INT(11)
+  *id_modele : INT(11) <<FK>>
+}
+
+entity "COMMANDE" as ORDER {
+  *id_commande : INT(11) <<PK, AI>>
+  --
+  *date_commande : DATETIME
+  *montant_total : DECIMAL(10,2)
+  *statut_paiement : VARCHAR(20)
+  *nom_facturation : VARCHAR(200)
+  *adresse_facturation : TEXT
+  *pays_facturation : VARCHAR(2)
+  *tva_appliquee : DECIMAL(5,2)
+  *id_client : INT(11) <<FK>>
+}
+
+entity "LIGNE_COMMANDE" as LINE {
+  *id_ligne : INT(11) <<PK, AI>>
+  --
+  *quantite : INT(11)
+  *prix_unitaire_achat : DECIMAL(10,2)
+  *id_commande : INT(11) <<FK>>
+  id_modele : INT(11) <<FK>>
+}
+
+entity "AVIS" as REVIEW {
+  *id_avis : INT(11) <<PK, AI>>
+  --
+  *note : TINYINT(1)
+  commentaire : TEXT
+  *date_avis : DATETIME
+  *id_auteur : INT(11) <<FK>>
+  *id_modele : INT(11) <<FK>>
+}
+
+' --- RELATIONS ---
+
+USER "1" -- "0..1" ARTIST
+USER "1" -- "0..n" ORDER
+USER "1" -- "0..n" REVIEW
+ARTIST "1" -- "0..n" MODEL
+MODEL "1" -- "1..n" FILE
+MODEL "1" -- "0..n" REVIEW
+ORDER "1" -- "1..n" LINE
+MODEL "1" -- "0..n" LINE
+
+@enduml

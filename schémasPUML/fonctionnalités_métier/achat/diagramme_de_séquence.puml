@@ -1,0 +1,78 @@
+@startuml 
+Title Processus d'Achat - Diagramme de Séquence
+
+actor "Acheteur" as User
+' Modification ici : Terme générique
+participant "FrontEnd (Site Web)" as Front
+participant "BackEnd (API)" as Back
+database "Base de Données" as DB
+participant "Stripe (API)" as Stripe
+
+' --- ÉTAPE 1 : Validation Panier & Taxes ---
+User -> Front : 1. Clique sur "Commander"
+activate Front
+
+Front -> User : 2. Demande adresse facturation
+User -> Front : 3. Saisit l'adresse
+
+' Appel au back pour calculer la TVA selon le pays
+Front -> Back : 4. POST /api/cart/calculate-tax (Adresse)
+activate Back
+Back -> Back : Détermine taux TVA (Pays)
+Back -> Back : Recalcule Total TTC
+Back --> Front : Retourne Montant Final TTC
+deactivate Back
+
+Front -> User : 5. Affiche récapitulatif avec Taxes
+User -> Front : 6. Confirme et clique "Payer"
+
+' --- ÉTAPE 2 : Initialisation Paiement ---
+Front -> Back : 7. POST /api/checkout (Panier validé)
+activate Back
+
+' Optionnel : Vérif stock
+Back -> DB : Vérifier disponibilité
+activate DB
+DB --> Back : OK
+deactivate DB
+
+Back -> Stripe : 8. Créer Session Paiement (Montant TTC)
+activate Stripe
+Stripe --> Back : Session ID
+deactivate Stripe
+
+Back --> Front : Retourne Session ID
+deactivate Back
+
+' --- ÉTAPE 3 : Paiement Sécurisé ---
+Front -> Stripe : 9. Redirection vers formulaire sécurisé
+activate Stripe
+Stripe -> User : Affiche formulaire CB
+User -> Stripe : 10. Valide paiement
+Stripe -> Stripe : Vérification Solde/Carte
+
+alt Paiement Réussi
+    Stripe --> Front : Redirection Page Succès
+    
+    ' Le Webhook est crucial : c'est la confirmation serveur à serveur
+    Stripe -> Back : 11. Webhook (Event: payment_intent.succeeded)
+    activate Back
+    
+    Back -> DB : 12. Créer Commande (Status: Payée)
+    activate DB
+    DB --> Back : Confirmé
+    deactivate DB
+    
+    Back -> DB : 13. Vider Panier
+    deactivate Back
+    
+    Front -> User : 14. Affiche "Merci pour votre achat"
+    
+else Paiement Échoué
+    Stripe --> Front : Redirection Page Erreur
+    Front -> User : Affiche "Paiement refusé"
+    deactivate Stripe
+    deactivate Front
+end
+
+@enduml

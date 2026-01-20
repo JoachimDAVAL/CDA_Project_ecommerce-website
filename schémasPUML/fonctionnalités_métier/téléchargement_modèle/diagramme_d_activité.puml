@@ -1,0 +1,34 @@
+@startuml
+title Téléchargement d'un Modèle - Diagramme d'Activité
+
+' Swimlanes
+|Acheteur|
+start
+:Accéder à "Mes Achats" (Dashboard);
+:Cliquer sur "Télécharger" un modèle;
+
+|#AntiqueWhite|Système (BackEnd)|
+:Récupérer l'ID de l'utilisateur et du modèle;
+:Interroger l'historique des commandes;
+
+if (Achat confirmé ?) then (non)
+    |Acheteur|
+    :Afficher erreur "Accès refusé";
+    stop
+else (oui)
+    |#AntiqueWhite|Système (BackEnd)|
+    :Demander un lien signé (temporaire) au Cloud;
+endif
+
+|#LightBlue|Plateforme Cloud|
+:Générer une URL signée (Valide 15 min);
+:Renvoyer l'URL au Système;
+
+|#AntiqueWhite|Système (BackEnd)|
+:Rediriger l'utilisateur vers l'URL;
+
+|Acheteur|
+:Le navigateur télécharge le fichier;
+stop
+
+@enduml

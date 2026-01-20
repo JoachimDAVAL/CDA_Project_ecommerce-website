@@ -1,0 +1,111 @@
+@startuml
+
+' Configuration visuelle
+hide circle
+skinparam linetype ortho
+
+' --- TABLES ---
+
+entity "UTILISATEUR" as USER {
+  *id_user : INT <<PK>>
+  --
+  email : VARCHAR(255)
+  mot_de_passe : VARCHAR(255)
+  pseudo : VARCHAR(50)
+  date_inscription : DATETIME
+  roles : JSON
+  nom : VARCHAR(100)
+  prenom : VARCHAR(100)
+  adresse_defaut : TEXT
+  pays_residence : VARCHAR(2)
+}
+
+entity "ARTISTE" as ARTIST {
+  *id_user : INT <<PK, FK>>
+  --
+  description_boutique : TEXT
+  siret : VARCHAR(14)
+  lien_portfolio : VARCHAR(255)
+}
+
+entity "MODELE_3D" as MODEL {
+  *id_modele : INT <<PK>>
+  --
+  titre : VARCHAR(100)
+  description : TEXT
+  prix : DECIMAL(10,2)
+  date_creation : DATETIME
+  statut : VARCHAR(20)
+  nombre_vues : INT
+  *id_artiste : INT <<FK>>
+}
+
+entity "FICHIER" as FILE {
+  *id_fichier : INT <<PK>>
+  --
+  url_cloud : VARCHAR(255)
+  type : VARCHAR(20)
+  format : VARCHAR(10)
+  taille_ko : INT
+  *id_modele : INT <<FK>>
+}
+
+entity "COMMANDE" as ORDER {
+  *id_commande : INT <<PK>>
+  --
+  date_commande : DATETIME
+  montant_total : DECIMAL(10,2)
+  statut_paiement : VARCHAR(20)
+  nom_facturation : VARCHAR(200)
+  adresse_facturation : TEXT
+  pays_facturation : VARCHAR(2)
+  tva_appliquee : DECIMAL(5,2)
+  *id_client : INT <<FK>>
+}
+
+entity "LIGNE_COMMANDE" as LINE {
+  *id_ligne : INT <<PK>>
+  --
+  quantite : INT
+  prix_unitaire_achat : DECIMAL(10,2)
+  *id_commande : INT <<FK>>
+  *id_modele : INT <<FK>>
+}
+
+entity "AVIS" as REVIEW {
+  *id_avis : INT <<PK>>
+  --
+  note : TINYINT
+  commentaire : TEXT
+  date_avis : DATETIME
+  *id_auteur : INT <<FK>>
+  *id_modele : INT <<FK>>
+}
+
+' --- RELATIONS AVEC CARDINALITÉS ---
+
+' Un utilisateur peut être un artiste (0 ou 1), un artiste est forcément un utilisateur (1)
+USER "1" -- "0..1" ARTIST : "id_user"
+
+' Un utilisateur passe 0 à N commandes. Une commande appartient à 1 seul utilisateur.
+USER "1" -- "0..n" ORDER : "id_client"
+
+' Un utilisateur écrit 0 à N avis. Un avis est écrit par 1 utilisateur.
+USER "1" -- "0..n" REVIEW : "id_auteur"
+
+' Un artiste publie 0 à N modèles. Un modèle appartient à 1 artiste.
+ARTIST "1" -- "0..n" MODEL : "id_artiste"
+
+' Un modèle possède 1 à N fichiers (sinon il est vide). Un fichier appartient à 1 modèle.
+MODEL "1" -- "1..n" FILE : "id_modele"
+
+' Un modèle reçoit 0 à N avis. Un avis concerne 1 modèle.
+MODEL "1" -- "0..n" REVIEW : "id_modele"
+
+' Une commande contient 1 à N lignes. Une ligne appartient à 1 commande.
+ORDER "1" -- "1..n" LINE : "id_commande"
+
+' Un modèle peut se trouver dans 0 à N lignes de commande (achats). Une ligne concerne 1 modèle.
+MODEL "1" -- "0..n" LINE : "id_modele"
+
+@enduml

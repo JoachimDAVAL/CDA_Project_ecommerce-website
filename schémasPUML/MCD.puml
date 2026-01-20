@@ -1,0 +1,78 @@
+@startuml
+
+' Configuration visuelle
+hide circle
+skinparam linetype ortho
+
+' --- ENTITÉS ---
+
+entity "UTILISATEUR" as USER {
+  email
+  mot_de_passe
+  pseudo
+  date_inscription
+  roles
+  ' --- AJOUTS ---
+  nom
+  prenom
+  adresse_facturation_defaut
+  pays_residence
+}
+
+entity "ARTISTE" as ARTIST {
+  description_boutique
+  siret
+  lien_portfolio
+  ' Pour le KYC (paiement revenus), l'adresse est celle de l'USER
+}
+
+entity "MODELE_3D" as MODEL {
+  titre
+  description
+  prix
+  date_creation
+  statut
+  nombre_vues
+}
+
+entity "FICHIER" as FILE {
+  url_cloud
+  type
+  format
+  taille_ko
+}
+
+entity "COMMANDE" as ORDER {
+  date_commande
+  montant_total
+  statut_paiement
+  ' --- IMPORTANT : COPIE POUR FACTURE ---
+  nom_facturation
+  adresse_facturation_complete
+  pays_facturation
+  tva_appliquee
+}
+
+entity "AVIS" as REVIEW {
+  note
+  commentaire
+  date_avis
+}
+
+entity "LIGNE_COMMANDE" as LINE {
+  quantite
+  prix_unitaire_achat
+}
+
+' --- RELATIONS ---
+
+USER "1" -- "0..1" ARTIST : EST_UN >
+ARTIST "1" -- "0..n" MODEL : PUBLIE >
+MODEL "1" -- "1..n" FILE : EST_COMPOSE_DE >
+USER "1" -- "0..n" ORDER : PASSE >
+ORDER "1" -- "1..n" LINE : CONTIENT >
+LINE "0..n" -- "1" MODEL : CONCERNE >
+USER "1" -- "0..n" REVIEW : REDIGE >
+MODEL "1" -- "0..n" REVIEW : RECOIT >
+
+@enduml

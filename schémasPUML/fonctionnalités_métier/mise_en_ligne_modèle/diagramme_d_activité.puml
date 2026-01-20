@@ -1,0 +1,48 @@
+@startuml
+title Mise en ligne d'un Modèle 3D - Diagramme d'Activité
+
+' Swimlanes
+|Artiste|
+start
+:Accéder au Dashboard Créateur;
+:Cliquer sur "Ajouter un modèle";
+:Remplir les métadonnées
+(Titre, Description, Prix, Catégorie);
+
+:Sélectionner les fichiers sources
+(Format .STL, .OBJ, .BLEND...);
+
+:Sélectionner les images de rendu
+(JPG, PNG);
+
+|#AntiqueWhite|Système (FrontEnd)|
+:Vérifier format et poids des fichiers;
+
+if (Fichiers conformes ?) then (non)
+    |Artiste|
+    :Afficher message d'erreur;
+    :Inviter à corriger;
+    stop
+else (oui)
+    |#AntiqueWhite|Système (BackEnd)|
+    :Créer l'entrée en Base de Données
+    (Statut: Création en cours);
+    
+    :Lancer l'upload vers le Cloud;
+endif
+
+|#LightBlue|Plateforme Cloud|
+:Recevoir et stocker les fichiers 3D;
+:Générer les URL d'accès sécurisées;
+
+|#AntiqueWhite|Système (BackEnd)|
+:Associer les URL Cloud à la fiche produit;
+:Mettre à jour le statut
+(Statut: En attente de validation);
+:Notifier les Administrateurs;
+
+|Artiste|
+:Afficher confirmation de soumission;
+stop
+
+@enduml

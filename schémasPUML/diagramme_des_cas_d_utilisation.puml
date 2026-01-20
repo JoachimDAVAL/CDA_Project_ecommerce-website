@@ -1,0 +1,108 @@
+@startuml diagramme_des_cas_d_utilisation
+Title Diagramme des Cas d'Utilisation - Plateforme E-Commerce de Modèles 3D
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+' --- ACTEURS ---
+actor "Internaute" as I
+actor "Acheteur" as B
+actor "Artiste" as A
+actor "Administrateur" as Admin
+actor "Système de Paiement" as Stripe <<Service>>
+actor "Plateforme Cloud" as Cloud <<Service>>
+
+I <|-- B
+I <|-- A
+
+package "Plateforme E-Commerce 3D" {
+
+    ' --- ACTIONS DE BASE ---
+    usecase "S'authentifier / S'inscrire" as UC_Login
+    
+    package "Fonctions Publiques" {
+        usecase "Accéder au catalogue" as UC_Access
+        usecase "Filtrer / Trier" as UC_Filter
+        usecase "Consulter fiche détaillée" as UC_View
+        usecase "Ajouter au panier" as UC_Cart
+    }
+
+    ' --- MESSAGERIE ---
+    package "Support & Messagerie" {
+        usecase "Échanger des messages\n(Support / Litiges)" as UC_Message
+    }
+
+    ' --- ACHETEUR ---
+    usecase "Payer un modèle 3D" as UC_Pay
+    usecase "Télécharger un modèle" as UC_Download
+    
+    rectangle "Dashboard Acheteur" {
+        usecase "Suivre ses commandes" as UC_TrackOrder
+    }
+
+    ' --- ARTISTE ---
+    usecase "Mettre en ligne des modèles" as UC_Upload
+
+    rectangle "Dashboard Artiste" {
+        usecase "Gérer ses modèles 3D" as UC_ManageModels
+        usecase "Éditer un modèle" as UC_EditModel
+        usecase "Supprimer un modèle" as UC_DeleteModel
+    }
+
+    ' --- ADMIN ---
+    rectangle "Dashboard Admin" {
+        usecase "Valider modèles (Mise en ligne)" as UC_Validate
+        usecase "Gérer les profils utilisateurs" as UC_ManageUsers
+        
+        ' Extensions Utilisateurs
+        usecase "Modérer un utilisateur" as UC_ModUser
+        usecase "Supprimer un utilisateur" as UC_DelUser
+
+        ' Modification demandée : Avis
+        usecase "Superviser les avis" as UC_SuperviseReviews
+        usecase "Supprimer un avis" as UC_DeleteReview
+    }
+}
+
+' --- RELATIONS ---
+
+' Internaute
+I --> UC_Login
+I --> UC_Access
+I --> UC_View
+I --> UC_Cart
+UC_Filter .> UC_Access : <<extend>>
+
+' Acheteur
+B --> UC_Pay
+B --> UC_Download
+B --> UC_TrackOrder
+B --> UC_Message
+
+' Artiste
+A --> UC_Upload
+A --> UC_ManageModels
+A --> UC_Message
+
+' Extensions Artiste
+UC_EditModel .> UC_ManageModels : <<extend>>
+UC_DeleteModel .> UC_ManageModels : <<extend>>
+
+' Admin
+Admin --> UC_Validate
+Admin --> UC_ManageUsers
+Admin --> UC_SuperviseReviews
+Admin --> UC_Message
+
+' Extensions Admin
+UC_ModUser .> UC_ManageUsers : <<extend>>
+UC_DelUser .> UC_ManageUsers : <<extend>>
+UC_DeleteReview .> UC_SuperviseReviews : <<extend>>
+
+' Systèmes externes
+UC_Pay ..> Stripe : <<use>>
+UC_Upload ..> Cloud : <<use>>
+UC_Download ..> Cloud : <<use>>
+
+@enduml

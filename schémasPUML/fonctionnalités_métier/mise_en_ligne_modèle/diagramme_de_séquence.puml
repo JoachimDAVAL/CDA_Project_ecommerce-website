@@ -1,0 +1,44 @@
+@startuml
+title Mise en ligne d'un Modèle 3D - Diagramme de Séquence
+
+actor "Artiste" as User
+participant "FrontEnd (Site Web)" as Front
+participant "BackEnd (API)" as Back
+participant "Plateforme Cloud" as Cloud
+database "Base de Données" as DB
+
+' --- ÉTAPE 1 : SAISIE ---
+User -> Front : 1. Remplit formulaire & Drag'n'drop fichiers
+activate Front
+
+Front -> Front : 2. Vérification JS (Format STL/OBJ, Poids)
+Front -> Back : 3. POST /api/models (Data + Fichiers)
+activate Back
+
+' --- ÉTAPE 2 : UPLOAD CLOUD ---
+Back -> Back : Vérification Sécurité (Type MIME, Auth)
+
+Back -> Cloud : 4. Upload Fichier 3D (.stl/.obj)
+activate Cloud
+Cloud --> Back : 5. Retourne URL du fichier (ex: s3://...)
+deactivate Cloud
+
+Back -> Cloud : 6. Upload Images de présentation
+activate Cloud
+Cloud --> Back : 7. Retourne URL des images
+deactivate Cloud
+
+' --- ÉTAPE 3 : ENREGISTREMENT ---
+Back -> DB : 8. INSERT Model (Titre, Prix, URLs, Status='PENDING')
+activate DB
+DB --> Back : ID du nouveau modèle
+deactivate DB
+
+' --- ÉTAPE 4 : CONFIRMATION ---
+Back --> Front : 9. Réponse HTTP 201 Created
+deactivate Back
+
+Front -> User : 10. Affiche "Modèle soumis à validation"
+deactivate Front
+
+@enduml
