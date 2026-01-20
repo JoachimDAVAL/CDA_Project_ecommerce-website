@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- ENUMS ---
+enum Role {
+  USER
+  ADMIN
+  ARTIST
+}
+
+enum ModelStatus {
+  EN_ATTENTE
+  EN_LIGNE
+  REJETE
+}
+
+enum FileType {
+  SOURCE_3D
+  IMAGE_RENDU
+}
+
+enum PaymentStatus {
+  PAYE
+  ECHOUE
+  REMBOURSE
+}
+
+// --- MODELS ---
+
+model User {
+  id_user          Int       @id @default(autoincrement())
+  email            String    @unique
+  mot_de_passe     String
+  pseudo           String
+  date_inscription DateTime  @default(now())
+  roles            Json      // Stocke ["ROLE_USER", "ROLE_ADMIN"]
+  nom              String?
+  prenom           String?
+  adresse_defaut   String?
+  pays_residence   String?
+
+  artist           Artist?
+  orders           Order[]
+  reviews          Review[]
+
+  @@map("utilisateur")
+}
+
+model Artist {
+  id_user              Int     @id
+  description_boutique String?
+  siret                String?
+  lien_portfolio       String?
+
+  user   User      @relation(fields: [id_user], references: [id_user], onDelete: Cascade)
+  models Model3D[]
+
+  @@map("artiste")
+}
+
+model Model3D {
+  id_modele     Int         @id @default(autoincrement())
+  titre         String
+  description   String?     @db.Text
+  prix          Decimal     @db.Decimal(10, 2)
+  date_creation DateTime    @default(now())
+  statut        ModelStatus @default(EN_ATTENTE)
+  nombre_vues   Int         @default(0)
+
+  id_artiste Int
+  artist     Artist @relation(fields: [id_artiste], references: [id_user], onDelete: Cascade)
+
+  files      File[]
+  reviews    Review[]
+  orderLines OrderItem[]
+
+  @@map("modele_3d")
+}
+
+model File {
+  id_fichier Int      @id @default(autoincrement())
+  url_cloud  String
+  type       FileType
+  format     String?
+  taille_ko  Int?
+
+  id_modele Int
+  model     Model3D @relation(fields: [id_modele], references: [id_modele], onDelete: Cascade)
+
+  @@map("fichier")
+}
+
+model Order {
+  id_commande         Int           @id @default(autoincrement())
+  date_commande       DateTime      @default(now())
+  montant_total       Decimal       @db.Decimal(10, 2)
+  statut_paiement     PaymentStatus
+  nom_facturation     String
+  adresse_facturation String
+  pays_facturation    String
+  tva_appliquee       Decimal       @db.Decimal(5, 2)
+
+  id_client Int?
+  user      User? @relation(fields: [id_client], references: [id_user], onDelete: SetNull)
+
+  items OrderItem[]
+
+  @@map("commande")
+}
+
+model OrderItem {
+  id_ligne            Int     @id @default(autoincrement())
+  quantite            Int     @default(1)
+  prix_unitaire_achat Decimal @db.Decimal(10, 2)
+
+  id_commande Int
+  order       Order @relation(fields: [id_commande], references: [id_commande], onDelete: Cascade)
+
+  id_modele Int?
+  model     Model3D? @relation(fields: [id_modele], references: [id_modele], onDelete: SetNull)
+
+  @@map("ligne_commande")
+}
+
+model Review {
+  id_avis   Int      @id @default(autoincrement())
+  note      Int      @db.SmallInt
+  commentaire String? @db.Text
+  date_avis DateTime @default(now())
+
+  id_auteur Int
+  user      User @relation(fields: [id_auteur], references: [id_user], onDelete: Cascade)
+
+  id_modele Int
+  model     Model3D @relation(fields: [id_modele], references: [id_modele], onDelete: Cascade)
+
+  @@map("avis")
+}
