@@ -17,9 +17,10 @@ CREATE TABLE "user" (
     "password" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "registrationDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "roles" JSONB NOT NULL,
+    "roles" "Role"[] DEFAULT ARRAY['USER']::"Role"[],
     "firstName" TEXT,
     "lastName" TEXT,
+    "profilePicture" TEXT,
     "defaultAddress" TEXT,
     "country" TEXT,
 
@@ -28,10 +29,11 @@ CREATE TABLE "user" (
 
 -- CreateTable
 CREATE TABLE "artist" (
-    "id" INTEGER NOT NULL,
+    "id" SERIAL NOT NULL,
     "shopDescription" TEXT,
-    "siret" TEXT,
+    "siret" CHAR(14) NOT NULL,
     "portfolioLink" TEXT,
+    "userId" INTEGER NOT NULL,
 
     CONSTRAINT "artist_pkey" PRIMARY KEY ("id")
 );
@@ -82,6 +84,7 @@ CREATE TABLE "order_item" (
     "id" SERIAL NOT NULL,
     "quantity" INTEGER NOT NULL DEFAULT 1,
     "unitPricePaid" DECIMAL(10,2) NOT NULL,
+    "modelTitleSnapshot" TEXT,
     "orderId" INTEGER NOT NULL,
     "modelId" INTEGER,
 
@@ -103,8 +106,17 @@ CREATE TABLE "review" (
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "artist_siret_key" ON "artist"("siret");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "artist_userId_key" ON "artist"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "review_authorId_modelId_key" ON "review"("authorId", "modelId");
+
 -- AddForeignKey
-ALTER TABLE "artist" ADD CONSTRAINT "artist_id_fkey" FOREIGN KEY ("id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "artist" ADD CONSTRAINT "artist_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "model_3d" ADD CONSTRAINT "model_3d_artistId_fkey" FOREIGN KEY ("artistId") REFERENCES "artist"("id") ON DELETE CASCADE ON UPDATE CASCADE;
