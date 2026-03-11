@@ -242,7 +242,7 @@ async function main() {
     await prisma.review.create({
         data: {
             rating: 5,
-            comment: 'Excellente qualité ! Textures magnifiques et optimisation parfaite.',
+            comment: 'Excellente qualité ! Textures magnifiques et optimisation parfaite. Je recommande vivement !',
             authorId: clientUser.id,
             modelId: model1.id,
         },
@@ -250,7 +250,7 @@ async function main() {
     await prisma.review.create({
         data: {
             rating: 4,
-            comment: 'Très bon modèle, manque juste quelques variations.',
+            comment: 'Très bon modèle, manque juste quelques variations de textures.',
             authorId: adminUser.id,
             modelId: model1.id,
         },
@@ -258,7 +258,7 @@ async function main() {
     await prisma.review.create({
         data: {
             rating: 5,
-            comment: 'Pack complet et très utile pour mon projet de jeu mobile !',
+            comment: 'Pack complet et très utile pour mon projet de jeu mobile ! Rapport qualité/prix imbattable.',
             authorId: clientUser.id,
             modelId: model2.id,
         },
@@ -266,12 +266,68 @@ async function main() {
     await prisma.review.create({
         data: {
             rating: 5,
-            comment: 'Design incroyable ! Les animations sont fluides.',
+            comment: 'Design incroyable ! Les animations sont fluides et les textures PBR sont magnifiques.',
             authorId: clientUser.id,
             modelId: model3.id,
         },
     });
-    console.log(`✅ ${4} avis créés\n`);
+    await prisma.review.create({
+        data: {
+            rating: 4,
+            comment: 'Beau modèle avec de bonnes animations. Quelques petits bugs sur Unity mais rien de grave.',
+            authorId: adminUser.id,
+            modelId: model4.id,
+        },
+    });
+    const client2 = await prisma.user.create({
+        data: {
+            email: 'devgame@test.com',
+            password: '$2b$10$abcdefghijklmnopqrstuv',
+            username: 'DevGameStudio',
+            firstName: 'Alice',
+            lastName: 'Martin',
+            roles: [client_1.Role.USER],
+            country: 'FR',
+            profilePicture: 'https://ui-avatars.com/api/?name=Alice+Martin&background=8B5CF6&color=fff',
+        },
+    });
+    await prisma.review.create({
+        data: {
+            rating: 3,
+            comment: 'Correct pour le prix. Manque un peu de détails sur certains assets.',
+            authorId: client2.id,
+            modelId: model2.id,
+        },
+    });
+    await prisma.review.create({
+        data: {
+            rating: 2,
+            comment: 'Déçu, le modèle ne correspond pas exactement aux screenshots.',
+            authorId: client2.id,
+            modelId: model4.id,
+        },
+    });
+    const client3 = await prisma.user.create({
+        data: {
+            email: 'gamer123@test.com',
+            password: '$2b$10$abcdefghijklmnopqrstuv',
+            username: 'ProGamer123',
+            firstName: 'Thomas',
+            lastName: 'Bernard',
+            roles: [client_1.Role.USER],
+            country: 'FR',
+            profilePicture: 'https://ui-avatars.com/api/?name=Thomas+Bernard&background=F59E0B&color=fff',
+        },
+    });
+    await prisma.review.create({
+        data: {
+            rating: 1,
+            comment: 'Mauvaise qualité, ne fonctionne pas sur Unreal Engine 5. Demande de remboursement en cours.',
+            authorId: client3.id,
+            modelId: model3.id,
+        },
+    });
+    console.log(`✅ ${8} avis créés (ratings: 1 à 5)\n`);
     console.log('🛒 Création des commandes...');
     const order1 = await prisma.order.create({
         data: {
@@ -333,11 +389,11 @@ async function main() {
         data: {
             totalAmount: 39.99,
             paymentStatus: client_1.PaymentStatus.REFUNDED,
-            billingName: 'Jean Dupont',
-            billingAddress: '123 Rue de la Paix, 75001 Paris',
+            billingName: 'Alice Martin',
+            billingAddress: '456 Avenue des Champs, 69000 Lyon',
             billingCountry: 'France',
             appliedVat: 20.0,
-            customerId: clientUser.id,
+            customerId: client2.id,
             items: {
                 create: [
                     {
@@ -371,12 +427,18 @@ async function main() {
     console.log(`   ├─ En attente (PENDING) : 1`);
     console.log(`   └─ Rejetés (REJECTED) : 1`);
     console.log(`⭐ Avis créés : ${reviewCount}`);
+    console.log(`   ├─ Note 5/5 : 4 avis`);
+    console.log(`   ├─ Note 4/5 : 2 avis`);
+    console.log(`   ├─ Note 3/5 : 1 avis`);
+    console.log(`   ├─ Note 2/5 : 1 avis`);
+    console.log(`   └─ Note 1/5 : 1 avis (note minimale)`);
     console.log(`🛒 Commandes créées : ${orderCount}`);
     console.log(`   ├─ Payées (PAID) : 1`);
     console.log(`   ├─ Échouées (FAILED) : 1`);
     console.log(`   └─ Remboursées (REFUNDED) : 1`);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('✅ Seeding terminé avec succès ! 🎉');
+    console.log('✅ Tous les ratings sont valides (entre 1 et 5)');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 }
 main()
