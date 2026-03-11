@@ -5,7 +5,6 @@ export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
     findAll(): Promise<Omit<{
-        id: number;
         email: string;
         password: string;
         username: string;
@@ -16,9 +15,9 @@ export declare class UsersController {
         profilePicture: string | null;
         defaultAddress: string | null;
         country: string | null;
+        id: number;
     }, "password">[]>;
     findOne(id: number): Promise<Omit<{
-        id: number;
         email: string;
         password: string;
         username: string;
@@ -29,9 +28,9 @@ export declare class UsersController {
         profilePicture: string | null;
         defaultAddress: string | null;
         country: string | null;
+        id: number;
     }, "password">>;
     create(createUserDto: CreateUserDto): Promise<Omit<{
-        id: number;
         email: string;
         password: string;
         username: string;
@@ -42,9 +41,9 @@ export declare class UsersController {
         profilePicture: string | null;
         defaultAddress: string | null;
         country: string | null;
+        id: number;
     }, "password">>;
     update(id: number, updateUserDto: UpdateUserDto): Promise<Omit<{
-        id: number;
         email: string;
         password: string;
         username: string;
@@ -55,6 +54,7 @@ export declare class UsersController {
         profilePicture: string | null;
         defaultAddress: string | null;
         country: string | null;
+        id: number;
     }, "password">>;
     remove(id: number): Promise<void>;
 }

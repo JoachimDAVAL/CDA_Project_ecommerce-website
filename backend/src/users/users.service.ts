@@ -63,7 +63,7 @@ export class UsersService {
     const user = await this.prisma.user.create({
       data: {
         ...rest,
-        password, // à hasher dans un guard/auth service avant d'appeler create
+        password,
       },
       omit: { password: true },
     });
